@@ -34,6 +34,41 @@
       // .data() 要素のdata属性を取得します。
       // .width() 要素の幅を取得します。
       // .length 要素の個数を取得します。
+
+      $(function() {
+        var SLIDE_LENGTH = $('.slider-list').find('li').length;
+        var slides = [0];
+        //添字
+        var current = 0;
+        var currentWidth = 0;
+        var $prev = $('.is-prev');
+        var $next = $('.is-next');
+        var $slider = $('.slider-list');
+        $('.slider-list').find('li').each(function(index) {
+          if(SLIDE_LENGTH - index === 1) {
+            return;
+          }
+          var slideWidth = $(this).width();
+          currentWidth += slideWidth;
+          slides.push(currentWidth);
+        });
+        $prev.on('click', function() {
+          current = current - 1;
+          if(current === -1) {
+            //添字を示すcurrent変数が-1になる場合は0にする。
+            current = SLIDE_LENGTH - 1;
+          }
+          $slider.animate({'marginLeft': -slides[current]}, 500);
+        });
+        $next.on('click', function(index) {
+          current = current + 1;
+          if(SLIDE_LENGTH === current) {
+            //添字を示すcurrent変数がSLIDE_LENGTHと同一になる場合は0にする。
+            current = 0;
+          }
+          $slider.animate({'marginLeft': -slides[current]}, 500);
+        });
+      });
     </script>
   </body>
 </html>

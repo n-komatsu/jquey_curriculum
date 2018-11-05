@@ -64,6 +64,76 @@
       //   // この中にデータ取得後の動きを記述していきます。
       // });
       //
+      $(function() {
+        //GETだと通信内容がキャッシュされてしまうので...
+        $.ajaxSetup({
+          type: 'GET',
+          datatype: 'json',
+          cache: false,
+          timeout: 10000,
+        });
+      });
+
+      var $bookLists = $('.lists');
+      var $serachInput = $('.search__text__input');
+      var inputVal = '';
+      var tempList = '';
+
+      $('.search__btn').on('click', function() {
+        tempList = '';
+        inputVal = $serachInput.val();
+        $bookLists.empty();
+        fetch(inputVal);
+      });
+
+      function fetch(searchWord) {
+        var SERVICE_URL = 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522';
+        var MY_APPLICATION_ID = '1019399324990976605';
+        var BOOKS_GENRE_ID = '001';
+        var HITS = 20;
+        $.ajax({
+          url: SERVICE_URL,
+          data: {
+            applicationId: MY_APPLICATION_ID,
+            booksGenreId: BOOKS_GENRE_ID,
+            keyword: searchWord,
+            hits: HITS,
+          }
+        })
+        .done(function(data) {
+          loadComplete(data);
+        })
+        .fail(function(err) {
+          loadFailed(err);
+        });
+      };
+
+      function loadComplete(data) {
+        var items = data.Items;
+        if(items.length === 0) {
+          tempList += "<li><p>検索結果はありませんでした</p></li>";
+        }
+        $.each(items, function(index) {
+          tempList += "<li class='lists__item'>" +
+                    "<div class='lists__item__inner'>" +
+                      "<a href='" + items[index]['Item']['itemUrl'] + "' class='lists__item__link' target='_blank'>" +
+                        "<img src='" +  items[index]['Item']['largeImageUrl'] + "' class='lists__item__img' alt=''>" +
+                        "<p class='lists__item__detail'>作品名：" + items[index]['Item']['title'] + "</p>" +
+                        "<p class='lists__item__detail'>作者　：" + items[index]['Item']['author'] + "</p>" +
+                        "<p class='lists__item__detail'>出版社：" + items[index]['Item']['publisherName'] + "</p>" +
+                      "</a>" +
+                    "</div>" +
+                  "</li>";
+        });
+
+        $bookLists.html(tempList);
+      };
+
+      function loadFailed(err) {
+        console.log(err);
+        tempList += "<li><p>通信に失敗しました</p></li>";
+        $bookLists.html(tempList);
+      }
     </script>
   </body>
 </html>

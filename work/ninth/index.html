@@ -45,6 +45,44 @@
       // </li>
       //
       // このテンプレートに取得してきたオブジェクトを流し込みます。
+      $(function() {
+        var SERVICE_URL = './data.json';
+        var colorList = $('.colorList');
+        var tempList = '';
+        //GETだと通信内容がキャッシュされてしまうので...
+        $.ajaxSetup({
+          type: 'GET',
+          dataType: 'json',
+          timeout: 10000,
+          cache: false,
+        })
+        $.ajax({
+          url: SERVICE_URL,
+        })
+        .done(function(data) {
+          loadComplete(items);
+        })
+        .fail(function(err) {
+          loadFailed(err);
+        });
+
+        function loadComplete(items) {
+          $.each(data.colorsArray, function(index) {
+            tempList += '<li class="colorList__item">' +
+                          '<p class="colorList__title" style="background-color:' + data.colorsArray[index]['hexValue'] + '">' +  data.colorsArray[index]['colorName'] + '</p>' +
+                        '</li>';
+            colorList.html(tempList);
+          })
+        };
+
+        function loadFailed(err) {
+          console.log(err);
+          tempList += '<li class="colorList__item">' +
+                          '<p>通信に失敗しました</p>' +
+                        '</li>';
+          colorList.html(tempList);
+        };
+      });
     </script>
   </body>
 </html>
