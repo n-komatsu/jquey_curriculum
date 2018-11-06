@@ -77,16 +77,26 @@
       var $bookLists = $('.lists');
       var $serachInput = $('.search__text__input');
       var inputVal = '';
+      var beforeKeyWord = '';
       var tempList = '';
+      var currentPage = 1;
+      var result = [];
 
       $('.search__btn').on('click', function() {
         tempList = '';
+        //何も入力されていなかったら処理を終了
+        if(!$serachInput.val().match(/\S/g)) return;
+        if(inputVal !== $serachInput.val()) {
+          currentPage = 1;
+          $bookLists.empty();
+        } else if(inputVal === $serachInput.val()) {
+          currentPage++;
+        }
         inputVal = $serachInput.val();
-        $bookLists.empty();
-        fetch(inputVal);
+        fetch(inputVal, currentPage);
       });
 
-      function fetch(searchWord) {
+      function fetch(searchWord, page) {
         var SERVICE_URL = 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522';
         var MY_APPLICATION_ID = '1019399324990976605';
         var BOOKS_GENRE_ID = '001';
@@ -98,6 +108,7 @@
             booksGenreId: BOOKS_GENRE_ID,
             keyword: searchWord,
             hits: HITS,
+            page: page,
           }
         })
         .done(function(data) {
@@ -110,8 +121,9 @@
 
       function loadComplete(data) {
         var items = data.Items;
-        if(items.length === 0) {
-          tempList += "<li><p>検索結果はありませんでした</p></li>";
+        if(data.count === 0 && beforeKeyWord !== inputVal) {
+          $bookLists.empty();
+          tempList = "<li><p>検索結果はありませんでした</p></li>";
         }
         $.each(items, function(index) {
           tempList += "<li class='lists__item'>" +
@@ -125,14 +137,15 @@
                     "</div>" +
                   "</li>";
         });
-
-        $bookLists.html(tempList);
+        beforeKeyWord = inputVal;
+        $bookLists.prepend(tempList);
       };
 
       function loadFailed(err) {
         console.log(err);
-        tempList += "<li><p>通信に失敗しました</p></li>";
-        $bookLists.html(tempList);
+        $bookLists.empty();
+        tempList = "<li><p>通信に失敗しました</p></li>";
+        $bookLists.prepend(tempList);
       }
     </script>
   </body>
